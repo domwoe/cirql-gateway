@@ -1,0 +1,26 @@
+{
+  "name": "cirql-gateway",
+  "version": "0.0.0",
+  "description": "Gateway for cirql heating control and room climate monitoring system",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/domwoe/cirql-gateway.git"
+  },
+  "author": "Dominic Wörner <dom.woe@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/domwoe/cirql-gateway/issues"
+  },
+  "homepage": "https://github.com/domwoe/cirql-gateway",
+  "dependencies": {
+    "firebase": "^1.0.21",
+    "getmac": "^1.0.6",
+    "net": "^1.0.2",
+    "q": "^1.0.1",
+    "request": "^2.42.0"
+  }
+}
