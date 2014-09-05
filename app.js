@@ -16,7 +16,7 @@ init.getHome()
 	})
 	.then(function(fbHomeRef) {
 		listenForPairing(fbHomeRef);
-		heartbeat(fbHomeRef,60000),
+		heartbeat(fbHomeRef,60000);
 	}),
 	function(reason) {
 		console.log(reason);
