@@ -15,12 +15,12 @@ init.getHome()
 		return getFbHomeRef(homeId)
 	})
 	.then(function(fbHomeRef) {
-		listenForPairing(fbHomeRef)
+		listenForPairing(fbHomeRef);
+		heartbeat(fbHomeRef,60000),
 	}),
 	function(reason) {
 		console.log(reason);
 	};
-
 
 function getFbHomeRef(homeId) {
 	console.log(homeId);
@@ -28,7 +28,7 @@ function getFbHomeRef(homeId) {
 	fbHomeRef = new Firebase(config.firebase+'/homes/'+homeId);
 	deferred.resolve(fbHomeRef);
 	return deferred.promise;
-};
+}
 
 function listenForPairing(fbHomeRef) {
 	fbHomeRef.child('gateway')
@@ -42,7 +42,7 @@ function listenForPairing(fbHomeRef) {
 					.set(false);
 			}
 		});
-};
+}
 
 function setPairing() {
 	client.write('set hmusb hmPairForSec 180\n');
@@ -63,3 +63,11 @@ function setPairing() {
 		})
 	},10*1000)
 }
+
+function heartbeat(fbHomeRef,frquency) {
+	setInterval(function() {
+		var gatewayRef = fbHomeRef.child('gateway');
+		gatewayRef.child('lastSeen').set(new Date().toString());
+	},frequency);
+}
+
