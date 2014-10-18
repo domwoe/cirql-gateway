@@ -13,6 +13,7 @@ var Thermostat = require('./lib/thermostat.js');
 
 var homeId = null;
 var fbHomeRef = null;
+var fbGatewayRef = null;
 
 var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
@@ -22,7 +23,9 @@ var fbRef = new Firebase(config.firebase+'/gateways');
 init.getGatewayId(fbRef)
 	.then(function(gatewayId) {
 		// Send a heartbeat to firebase every 60s
-		heartbeat(fbRef.child(gatewayId),60000);
+		fbGatewayRef = fbRef.child(gatewayId)
+		heartbeat(60000);
+		listenForPairing();
 		return init.getHomeId(fbRef,gatewayId);
 	})	
 	.then(function(home) {
@@ -32,7 +35,6 @@ init.getGatewayId(fbRef)
 	})
 	.then(function(fbHomeRef) {
 		fbHomeRef = fbHomeRef;
-		listenForPairing(fbHomeRef);
 		// Listen for new thermostat data via telnet 
 		fhem.listen(fbHomeRef);
 		watchThermostats(fbHomeRef);
@@ -85,14 +87,13 @@ function getFbHomeRef(homeId) {
 	return deferred.promise;
 }
 
-function listenForPairing(fbHomeRef) {
-	fbHomeRef.child('gateway')
-		.child('activatePairing')
+function listenForPairing() {
+	fbGatewayRef.child('activatePairing')
 		.on('value', function(snap) {
 			var activatePairing = snap.val();
 			if (activatePairing) {
 				setPairing();
-				fbHomeRef.child('gateway')
+				fbGatewayRef
 					.child('activatePairing')
 					.set(false);
 			}
@@ -101,27 +102,28 @@ function listenForPairing(fbHomeRef) {
 
 function setPairing() {
 	// Activate pairing for 180s = 3min
-	fhem.pairing(180);
+	var period = 180;
+	console.log('Pairing activated for '+period+'s');
+	fhem.pairing(period);
 	var retryTimer = setInterval(function() {
 		request('http://'+HOST+':'+HTTPPORT+'/fhem?cmd=jsonlist2%20hmusb&XHR=1', function (error, response, body) {
   			if (!error && response.statusCode == 200) {
-  				var gatewayRef = fbHomeRef.child('gateway');
   				var jsonObj = JSON.parse(body);
   				//console.log((jsonObj.Results[0].Internals).hasOwnProperty('hmPair'));
   				if ((jsonObj.Results[0].Internals).hasOwnProperty('hmPair')){
-  					gatewayRef.child('isPairing').set(true);	
+  					fbGatewayRef.child('isPairing').set(true);	
   				}
   				else {
-  					gatewayRef.child('isPairing').set(false);
+  					fbGatewayRef.child('isPairing').set(false);
   					clearInterval(retryTimer);	
   				}
   			}
 		});
 	},10*1000);
 }
-function heartbeat(fbRef,frequency) {
+function heartbeat(frequency) {
 	setInterval(function() {
 		console.log('beep');
-		fbRef.child('lastSeen').set(new Date().toString());
+		fbGatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 }
