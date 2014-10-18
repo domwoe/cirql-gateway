@@ -123,7 +123,3 @@ function heartbeat(fbHomeRef,frequency) {
 		gatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 }
-
-
-// Get serial number
-// Pairing information
