@@ -29,7 +29,7 @@ init.getHome()
 		listenForPairing(fbHomeRef);
 		// Send a heartbeat to firebase every 60s
 		heartbeat(fbHomeRef,60000);
-		// Listen for thermostat data
+		// Listen for new thermostat data via telnet 
 		fhem.listen(fbHomeRef);
 		watchThermostats(fbHomeRef);
 	}),
@@ -63,6 +63,7 @@ function watchThermostats(fbHomeRef) {
 
     if (thermostatObj) {
       //log.info({home: this.homeId, room: this.id}, ' Room: delete Thermostat with id: '+id);
+      thermostatObj.unwatchAll();
       thermostatObj.setFbRefOff();
       delete thermostats[id];
     }
