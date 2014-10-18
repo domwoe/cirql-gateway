@@ -2,7 +2,7 @@
 'use strict';
 
 var Q = require('q');
-var Firebase = require('Firebase');
+var Firebase = require('firebase');
 var request = require('request');
 
 var config = require('./config');
@@ -17,18 +17,22 @@ var fbHomeRef = null;
 var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
 
+var fbRef = new Firebase(config.firebase+'/gateways');
 // Start initializing
-init.getHome()
-	.then(function(id) {
-		homeId = id;
+init.getGatewayId(fbRef)
+	.then(function(gatewayId) {
+		// Send a heartbeat to firebase every 60s
+		heartbeat(fbRef.child(gatewayId),60000);
+		return init.getHomeId(fbRef,gatewayId);
+	})	
+	.then(function(home) {
+		homeId = home;
 		console.log("I'm belonging to home "+homeId);
 		return getFbHomeRef(homeId);
 	})
 	.then(function(fbHomeRef) {
 		fbHomeRef = fbHomeRef;
 		listenForPairing(fbHomeRef);
-		// Send a heartbeat to firebase every 60s
-		heartbeat(fbHomeRef,60000);
 		// Listen for new thermostat data via telnet 
 		fhem.listen(fbHomeRef);
 		watchThermostats(fbHomeRef);
@@ -68,7 +72,6 @@ function watchThermostats(fbHomeRef) {
       delete thermostats[id];
     }
   });
-
 }
 
 function setFbRefOff() {
@@ -116,10 +119,9 @@ function setPairing() {
 		});
 	},10*1000);
 }
-function heartbeat(fbHomeRef,frequency) {
+function heartbeat(fbRef,frequency) {
 	setInterval(function() {
 		console.log('beep');
-		var gatewayRef = fbHomeRef.child('gateway');
-		gatewayRef.child('lastSeen').set(new Date().toString());
+		fbRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 }
