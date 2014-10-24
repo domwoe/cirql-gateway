@@ -11,6 +11,28 @@ var fhem = require('./lib/fhem');
 
 var Thermostat = require('./lib/thermostat.js');
 
+var bunyan = require('bunyan'),
+    Bunyan2Loggly = require('bunyan-loggly').Bunyan2Loggly,
+    logger;
+
+// create the logger
+logger = bunyan.createLogger({
+    name: 'cirql-gateway',
+    streams: [
+    	{
+            stream: process.stdout,
+            level: "info"
+        },
+        {
+            type: 'raw',
+            stream: new Bunyan2Loggly({
+                token: 'bcdfdbd8-dd8e-4ce9-a97c-72e9774f3e95',
+                subdomain: 'cirql'
+            })
+        }
+    ]
+});
+
 var homeId = null;
 var fbHomeRef = null;
 var fbGatewayRef = null;
@@ -30,7 +52,7 @@ init.getGatewayId(fbRef)
 	})	
 	.then(function(home) {
 		homeId = home;
-		console.log("I'm belonging to home "+homeId);
+		logger.info({home: homeId},  "App.js: I'm belonging to home " + homeId );
 		return getFbHomeRef(homeId);
 	})
 	.then(function(fbHomeRef) {
@@ -103,7 +125,7 @@ function listenForPairing() {
 function setPairing() {
 	// Activate pairing for 180s = 3min
 	var period = 180;
-	console.log('Pairing activated for '+period+'s');
+	logger.info({home: homeId},  'App.js: Pairing activated for '+period+'s');
 	fhem.pairing(period);
 	var retryTimer = setInterval(function() {
 		request('http://'+HOST+':'+HTTPPORT+'/fhem?cmd=jsonlist2%20hmusb&XHR=1', function (error, response, body) {
@@ -123,7 +145,6 @@ function setPairing() {
 }
 function heartbeat(frequency) {
 	setInterval(function() {
-		console.log('beep');
 		fbGatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 }
