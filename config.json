@@ -1,6 +1,6 @@
 {
 "firebase": "https://cirql.firebaseio.com/",
-"HOST": "25.49.198.57",
+"HOST": "localhost",
 "NETPORT": "7072",
 "HTTPPORT": "8083" 
 }
