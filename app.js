@@ -47,6 +47,7 @@ init.getGatewayId(fbRef)
 		// Send a heartbeat to firebase every 60s
 		fbGatewayRef = fbRef.child(gatewayId)
 		heartbeat(60000);
+    fhem.initHMDevice(fbGatewayRef);
 		listenForPairing();
 		return init.getHomeId(fbRef,gatewayId);
 	})	
