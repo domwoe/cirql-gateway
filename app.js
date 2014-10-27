@@ -73,16 +73,27 @@ function watchThermostats(fbHomeRef) {
   fbHomeRef.child('thermostats').on('child_added', function(fbThermostat) {
   	var fbThermostatRef = fbThermostat.ref();
     var thermostatId = fbThermostat.name();
+
     //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
    thermostats[thermostatId] = new Thermostat(thermostatId,fbThermostatRef);
+   thermostats[thermostatId].watch('burstRx',24*60*60*1000);
+   thermostats[thermostatId].watch('windowOpnMode',24*60*60*1000);
+   thermostats[thermostatId].watch('tempOffset',24*60*60*1000);
+   thermostats[thermostatId].watch('regAdaptive',24*60*60*1000);
    thermostats[thermostatId].watch('pairedTo',60*60*1000);
    thermostats[thermostatId].watch('activity',10*1000);
    thermostats[thermostatId].watch('commandAccepted',10*1000);
-   thermostats[thermostatId].watch('btnLock',5*60*1000);
-   thermostats[thermostatId].watch('burstRx',10*1000);
+   thermostats[thermostatId].watch('btnLock',24*60*60*1000);
    thermostats[thermostatId].watch('state',10*1000);
    thermostats[thermostatId].watch('mode',10*1000);
   });
+
+  if (fbThermostat.child('burstRX').child('Value').val() !== 'on') {
+    thermostats[thermostatId].activateBurst();
+  }
+   if (fbThermostat.child('windowOpnMode').child('Value').val() !== 'off') {
+    thermostats[thermostatId].deactivateWindowOpnMode();
+  }
 
   /** Listen if thermostat is removed from room */
   fbHomeRef.child('thermostats').on('child_removed', function(fbThermostat) {
