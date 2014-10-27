@@ -1,6 +1,9 @@
 
 'use strict';
 
+var pjson = require('./package.json');
+var version = pjson.version;
+
 var Q = require('q');
 var Firebase = require('firebase');
 var request = require('request');
@@ -41,6 +44,8 @@ var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
 
 var fbRef = new Firebase(config.firebase+'/gateways');
+
+
 // Start initializing
 init.getGatewayId(fbRef)
 	.then(function(gatewayId) {
@@ -66,6 +71,25 @@ init.getGatewayId(fbRef)
 		console.log(reason);
 	};
 
+function watchUpdates(fbGatewayRef) {
+  fbGatewayRef.child('version').once('value', function(fbNewVersion) {
+    if (fbNewVersion) {
+      var newVersion = fbNewVersion.val();
+      if (newVersion !== version) {
+        logger.info({home: homeId},  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
+        var exec = require('child_process').exec;
+        var child = exec('git pull');
+        child.stdout.on('data', function(data) {
+          logger.info({home: homeId},  "App.js: Update procedure: "+data);
+        });
+        child.stderr.on('data', function(data) {
+            logger.warn({home: homeId},  "App.js: Update procedure error: "+data);
+        });
+      }
+    }
+  }
+}
+
 function watchThermostats(fbHomeRef) {
   /** Create and Delete Thermostats iff room has thermostats */
   /** Listen if thermostat is added to room **/
@@ -76,7 +100,9 @@ function watchThermostats(fbHomeRef) {
 
     //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
    thermostats[thermostatId] = new Thermostat(thermostatId,fbThermostatRef);
+   // watch method also activates burst mode if deactivated
    thermostats[thermostatId].watch('burstRx',24*60*60*1000);
+   // watch method also deactivates window open mode if activated
    thermostats[thermostatId].watch('windowOpnMode',24*60*60*1000);
    thermostats[thermostatId].watch('tempOffset',24*60*60*1000);
    thermostats[thermostatId].watch('regAdaptive',24*60*60*1000);
