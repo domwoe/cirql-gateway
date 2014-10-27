@@ -87,7 +87,7 @@ function watchUpdates(fbGatewayRef) {
         });
       }
     }
-  }
+  });
 }
 
 function watchThermostats(fbHomeRef) {
