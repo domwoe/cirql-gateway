@@ -57,17 +57,19 @@ function watchUpdates(fbGatewayRef) {
   fbGatewayRef.child('version').once('value', function(fbNewVersion) {
     if (fbNewVersion) {
       var newVersion = fbNewVersion.val();
+      if(newVersion) {
       if (newVersion !== version) {
-        logger.info({home: homeId},  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
+        log.info({home: homeId},  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
         var exec = require('child_process').exec;
         var child = exec('git pull');
         child.stdout.on('data', function(data) {
-          logger.info({home: homeId},  "App.js: Update procedure: "+data);
+          log.info({home: homeId},  "App.js: Update procedure: "+data);
         });
         child.stderr.on('data', function(data) {
-            logger.warn({home: homeId},  "App.js: Update procedure error: "+data);
+            log.warn({home: homeId},  "App.js: Update procedure error: "+data);
         });
       }
+     }
     }
   });
 }
