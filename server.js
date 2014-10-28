@@ -9,7 +9,7 @@ var forever = require('forever'),
         'watchDirectory': '.',      // Top-level directory to watch from.
         'watchIgnoreDotFiles': true, // whether to ignore dot files
         'watchIgnorePatterns': [],
-        'spinSleepTime': 3000,       // array of glob patterns to ignore, merged with contents of watchDirectory + '/.foreverignore' file
+        'spinSleepTime': 5000,       // array of glob patterns to ignore, merged with contents of watchDirectory + '/.foreverignore' file
         'logFile': '../forever.log', // Path to log output from forever process (when daemonized)
         'outFile': '../forever.out', // Path to log output from child stdout
         'errFile': '../forever.err'
