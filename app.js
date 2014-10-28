@@ -1,4 +1,4 @@
-
+/*jslint node: true */
 'use strict';
 
 var Q = require('q');
@@ -11,27 +11,8 @@ var fhem = require('./lib/fhem');
 
 var Thermostat = require('./lib/thermostat.js');
 
-var bunyan = require('bunyan'),
-    Bunyan2Loggly = require('bunyan-loggly').Bunyan2Loggly,
-    logger;
-
-// create the logger
-logger = bunyan.createLogger({
-    name: 'cirql-gateway',
-    streams: [
-    	{
-            stream: process.stdout,
-            level: "info"
-        },
-        {
-            type: 'raw',
-            stream: new Bunyan2Loggly({
-                token: 'bcdfdbd8-dd8e-4ce9-a97c-72e9774f3e95',
-                subdomain: 'cirql'
-            })
-        }
-    ]
-});
+var bunyan = require('bunyan');
+var log = bunyan.createLogger({name: 'cirql-gateway'});
 
 var homeId = null;
 var fbHomeRef = null;
@@ -45,14 +26,14 @@ var fbRef = new Firebase(config.firebase+'/gateways');
 init.getGatewayId(fbRef)
 	.then(function(gatewayId) {
 		// Send a heartbeat to firebase every 60s
-		fbGatewayRef = fbRef.child(gatewayId)
+		fbGatewayRef = fbRef.child(gatewayId);
 		heartbeat(60000);
 		listenForPairing();
 		return init.getHomeId(fbRef,gatewayId);
 	})	
 	.then(function(home) {
 		homeId = home;
-		logger.info({home: homeId},  "App.js: I'm belonging to home " + homeId );
+		log.info({home: homeId},  "App.js: I'm belonging to home " + homeId );
 		return getFbHomeRef(homeId);
 	})
 	.then(function(fbHomeRef) {
@@ -62,7 +43,7 @@ init.getGatewayId(fbRef)
 		watchThermostats(fbHomeRef);
 	}),
 	function(reason) {
-		console.log(reason);
+		log.info({home: homeId}, reason);
 	};
 
 function watchThermostats(fbHomeRef) {
@@ -85,7 +66,7 @@ function watchThermostats(fbHomeRef) {
 
   /** Listen if thermostat is removed from room */
   fbHomeRef.child('thermostats').on('child_removed', function(fbThermostat) {
-    console.log('delete a thermostat');
+    log.info({home: homeId},'delete a thermostat');
     var id = fbThermostat.name();
     var thermostatObj = thermostats[id];
 
@@ -99,7 +80,7 @@ function watchThermostats(fbHomeRef) {
 }
 
 function setFbRefOff() {
-	this.fbRef.off();
+	fbRef.off();
 }
 
 function getFbHomeRef(homeId) {
@@ -125,7 +106,7 @@ function listenForPairing() {
 function setPairing() {
 	// Activate pairing for 180s = 3min
 	var period = 180;
-	logger.info({home: homeId},  'App.js: Pairing activated for '+period+'s');
+	log.info({home: homeId},  'App.js: Pairing activated for '+period+'s');
 	fhem.pairing(period);
 	var retryTimer = setInterval(function() {
 		request('http://'+HOST+':'+HTTPPORT+'/fhem?cmd=jsonlist2%20hmusb&XHR=1', function (error, response, body) {
