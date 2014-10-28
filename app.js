@@ -26,6 +26,26 @@ var HTTPPORT = config.HTTPPORT;
 
 var fbRef = new Firebase(config.firebase+'/gateways');
 
+// Always check for version updates
+fbRef.child('version').on('value', function(fbNewVersion) {
+  log.info(  "App.js: Check for Update");
+  if (fbNewVersion) {
+    var newVersion = fbNewVersion.val();
+    if(newVersion) {
+    if (newVersion !== version) {
+      log.info(  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
+      var exec = require('child_process').exec;
+      var child = exec('git pull');
+      child.stdout.on('data', function(data) {
+        log.info(  "App.js: Update procedure: "+data);
+      });
+      child.stderr.on('data', function(data) {
+          log.warn(  "App.js: Update procedure error: "+data);
+      });
+    }
+   }
+  }
+});
 
 // Start initializing
 init.getGatewayId(fbRef)
@@ -33,7 +53,7 @@ init.getGatewayId(fbRef)
 		// Send a heartbeat to firebase every 60s
 		fbGatewayRef = fbRef.child(gatewayId);
 		heartbeat(60000);
-    watchUpdates(fbGatewayRef);
+   // watchUpdates(fbGatewayRef);
     fhem.initHMDevice(fbGatewayRef);
 		listenForPairing();
 		return init.getHomeId(fbRef,gatewayId);
@@ -53,26 +73,6 @@ init.getGatewayId(fbRef)
 		log.info({home: homeId}, reason);
 	};
 
-function watchUpdates(fbGatewayRef) {
-  fbGatewayRef.child('version').once('value', function(fbNewVersion) {
-    if (fbNewVersion) {
-      var newVersion = fbNewVersion.val();
-      if(newVersion) {
-      if (newVersion !== version) {
-        log.info({home: homeId},  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
-        var exec = require('child_process').exec;
-        var child = exec('git pull');
-        child.stdout.on('data', function(data) {
-          log.info({home: homeId},  "App.js: Update procedure: "+data);
-        });
-        child.stderr.on('data', function(data) {
-            log.warn({home: homeId},  "App.js: Update procedure error: "+data);
-        });
-      }
-     }
-    }
-  });
-}
 
 function watchThermostats(fbHomeRef) {
   /** Create and Delete Thermostats iff room has thermostats */
