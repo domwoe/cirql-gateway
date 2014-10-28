@@ -1,6 +1,9 @@
 /*jslint node: true */
 'use strict';
 
+var pjson = require('./package.json');
+var version = pjson.version;
+
 var Q = require('q');
 var Firebase = require('firebase');
 var request = require('request');
@@ -22,12 +25,16 @@ var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
 
 var fbRef = new Firebase(config.firebase+'/gateways');
+
+
 // Start initializing
 init.getGatewayId(fbRef)
 	.then(function(gatewayId) {
 		// Send a heartbeat to firebase every 60s
 		fbGatewayRef = fbRef.child(gatewayId);
 		heartbeat(60000);
+    watchUpdates(fbGatewayRef);
+    fhem.initHMDevice(fbGatewayRef);
 		listenForPairing();
 		return init.getHomeId(fbRef,gatewayId);
 	})	
@@ -46,6 +53,25 @@ init.getGatewayId(fbRef)
 		log.info({home: homeId}, reason);
 	};
 
+function watchUpdates(fbGatewayRef) {
+  fbGatewayRef.child('version').once('value', function(fbNewVersion) {
+    if (fbNewVersion) {
+      var newVersion = fbNewVersion.val();
+      if (newVersion !== version) {
+        logger.info({home: homeId},  "App.js: New version "+newVersion+" available (currently: "+version+"). Starting update... ");
+        var exec = require('child_process').exec;
+        var child = exec('git pull');
+        child.stdout.on('data', function(data) {
+          logger.info({home: homeId},  "App.js: Update procedure: "+data);
+        });
+        child.stderr.on('data', function(data) {
+            logger.warn({home: homeId},  "App.js: Update procedure error: "+data);
+        });
+      }
+    }
+  });
+}
+
 function watchThermostats(fbHomeRef) {
   /** Create and Delete Thermostats iff room has thermostats */
   /** Listen if thermostat is added to room **/
@@ -53,16 +79,29 @@ function watchThermostats(fbHomeRef) {
   fbHomeRef.child('thermostats').on('child_added', function(fbThermostat) {
   	var fbThermostatRef = fbThermostat.ref();
     var thermostatId = fbThermostat.name();
+
     //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
    thermostats[thermostatId] = new Thermostat(thermostatId,fbThermostatRef);
+   // watch method also activates burst mode if deactivated
+   thermostats[thermostatId].watch('burstRx',24*60*60*1000);
+   // watch method also deactivates window open mode if activated
+   thermostats[thermostatId].watch('windowOpnMode',24*60*60*1000);
+   thermostats[thermostatId].watch('tempOffset',24*60*60*1000);
+   thermostats[thermostatId].watch('regAdaptive',24*60*60*1000);
    thermostats[thermostatId].watch('pairedTo',60*60*1000);
    thermostats[thermostatId].watch('activity',10*1000);
    thermostats[thermostatId].watch('commandAccepted',10*1000);
-   thermostats[thermostatId].watch('btnLock',5*60*1000);
-   thermostats[thermostatId].watch('burstRx',10*1000);
+   thermostats[thermostatId].watch('btnLock',24*60*60*1000);
    thermostats[thermostatId].watch('state',10*1000);
    thermostats[thermostatId].watch('mode',10*1000);
   });
+
+  if (fbThermostat.child('burstRX').child('Value').val() !== 'on') {
+    thermostats[thermostatId].activateBurst();
+  }
+   if (fbThermostat.child('windowOpnMode').child('Value').val() !== 'off') {
+    thermostats[thermostatId].deactivateWindowOpnMode();
+  }
 
   /** Listen if thermostat is removed from room */
   fbHomeRef.child('thermostats').on('child_removed', function(fbThermostat) {
