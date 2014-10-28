@@ -26,7 +26,7 @@ var HTTPPORT = config.HTTPPORT;
 
 var fbRef = new Firebase(config.firebase+'/gateways');
 
-// Always check for version updates
+// Always check for new version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
   log.info(  "App.js: Check for Update");
   if (fbNewVersion) {
