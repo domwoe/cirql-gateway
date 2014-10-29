@@ -14,8 +14,26 @@ var fhem = require('./lib/fhem');
 
 var Thermostat = require('./lib/thermostat.js');
 
-var bunyan = require('bunyan');
-var log = bunyan.createLogger({name: 'cirql-gateway'});
+var bunyan = require('bunyan'),
+    Bunyan2Loggly = require('bunyan-loggly').Bunyan2Loggly;
+
+// create the logger
+var log = bunyan.createLogger({
+    name: 'cirql-gateway',
+    streams: [
+      {
+            stream: process.stdout,
+            level: "info"
+        },
+        {    
+            type: 'raw',
+            stream: new Bunyan2Loggly({
+                token: 'bcdfdbd8-dd8e-4ce9-a97c-72e9774f3e95',
+                subdomain: 'cirql'
+            })
+        }
+    ]
+});
 
 var homeId = null;
 var fbHomeRef = null;
