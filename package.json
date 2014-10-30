@@ -18,6 +18,7 @@
   "homepage": "https://github.com/domwoe/cirql-gateway",
   "dependencies": {
     "bunyan": "^1.2.0",
+    "bunyan-logentries": "^0.1.0",
     "bunyan-loggly": "0.0.5",
     "firebase": "^1.0.21",
     "getmac": "^1.0.6",
