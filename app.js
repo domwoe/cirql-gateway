@@ -14,10 +14,23 @@ var fhem = require('./lib/fhem');
 
 var Thermostat = require('./lib/thermostat.js');
 
-var bunyan = require('bunyan');
+var bunyan = require('bunyan')
+var bunyanLogentries = require('bunyan-logentries')
+
+
 var log = bunyan.createLogger({
-    name: 'cirql-gateway'
-});
+  name: "gateway",
+  streams: [
+    {
+            stream: process.stdout,
+            level: "info"
+        },
+    {
+      level: 'info',
+      stream: bunyanLogentries.createStream({token: '2f63e221-e11a-44e3-b5f3-3bd09a39bdc2'}),
+      type: 'raw'
+    }]
+})
 
 var homeId = null;
 var fbHomeRef = null;
@@ -28,7 +41,7 @@ var HTTPPORT = config.HTTPPORT;
 
 var fbRef = new Firebase(config.firebase + '/gateways');
 
-// Always check for new version updates
+// Always check for version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
     log.info("App.js: Check for Update");
     if (fbNewVersion) {
@@ -180,7 +193,11 @@ function setPairing() {
 }
 
 function heartbeat(frequency) {
-    setInterval(function() {
-        fbGatewayRef.child('lastSeen').set(new Date().toString());
-    }, frequency);
+
+	setInterval(function() {
+    log.info({home: homeId},  "App.js: Heartbeat of " + homeId );
+		fbGatewayRef.child('lastSeen').set(new Date().toString());
+	},frequency);
+
 }
+
