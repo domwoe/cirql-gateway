@@ -46,13 +46,13 @@ function watchThermostats(fbHomeRef) {
     var thermostatId = fbThermostat.name();
     //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
    thermostats[thermostatId] = new Thermostat(thermostatId,fbThermostatRef);
-   thermostats[thermostatId].watch('pairedTo',60*60*1000);
-   thermostats[thermostatId].watch('activity',10*1000);
-   thermostats[thermostatId].watch('commandAccepted',10*1000);
-   thermostats[thermostatId].watch('btnLock',5*60*1000);
-   thermostats[thermostatId].watch('burstRx',10*1000);
+   //thermostats[thermostatId].watch('pairedTo',60*60*1000);
+   //thermostats[thermostatId].watch('activity',60*10*1000);
+   //thermostats[thermostatId].watch('commandAccepted',10*1000);
+   thermostats[thermostatId].watch('btnLock',58*10*1000);
+   thermostats[thermostatId].watch('burstRx',60*10*1000);
    thermostats[thermostatId].watch('state',10*1000);
-   thermostats[thermostatId].watch('mode',10*1000);
+   thermostats[thermostatId].watch('mode',31*10*1000);
   });
 
   /** Listen if thermostat is removed from room */
