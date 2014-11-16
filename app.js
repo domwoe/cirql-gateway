@@ -22,7 +22,7 @@ var hostname = os.hostname();
 
 
 var log = bunyan.createLogger({
-  name: "gateway-",
+  name: "gateway",
   streams: [
     {
             stream: process.stdout,
@@ -46,19 +46,19 @@ var fbRef = new Firebase(config.firebase + '/gateways');
 
 // Always check for version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
-    log.info(hostname+" - App.js: Check for Update");
+    log.info({host: hostname},"App.js: Check for Update");
     if (fbNewVersion) {
         var newVersion = fbNewVersion.val();
         if (newVersion) {
             if (newVersion !== version) {
-                log.info(hostname+" - App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
+                log.info({host: hostname},"App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
                 var exec = require('child_process').exec;
                 var child = exec('git pull');
                 child.stdout.on('data', function(data) {
-                    log.info(hostname+" - App.js: Update procedure: " + data);
+                    log.info({host: hostname},"App.js: Update procedure: " + data);
                 });
                 child.stderr.on('data', function(data) {
-                    log.warn(hostname+" - App.js: Update procedure error: " + data);
+                    log.warn({host: hostname},"App.js: Update procedure error: " + data);
                 });
             }
         }
@@ -79,8 +79,9 @@ init.getGatewayId(fbRef)
     .then(function(home) {
         homeId = home;
         log.info({
+            host: hostname,
             home: homeId
-        }, hostname+" - App.js: I'm belonging to home " + homeId);
+        }, "App.js: I'm belonging to home " + homeId);
         return getFbHomeRef(homeId);
     })
     .then(function(fbHomeRef) {
@@ -134,8 +135,9 @@ function watchThermostats(fbHomeRef) {
     /** Listen if thermostat is removed from room */
     fbHomeRef.child('thermostats').on('child_removed', function(fbThermostat) {
         log.info({
+            host: hostname,
             home: homeId
-        }, 'delete a thermostat');
+        }, 'App.js: delete a thermostat');
         var id = fbThermostat.name();
         var thermostatObj = thermostats[id];
 
@@ -176,8 +178,9 @@ function setPairing() {
     // Activate pairing for 180s = 3min
     var period = 180;
     log.info({
+        host: hostname,
         home: homeId
-    }, hostname+' - App.js: Pairing activated for ' + period + 's');
+    }, 'App.js: Pairing activated for ' + period + 's');
     fhem.pairing(period);
     var retryTimer = setInterval(function() {
         request('http://' + HOST + ':' + HTTPPORT + '/fhem?cmd=jsonlist2%20hmusb&XHR=1', function(error, response, body) {
@@ -198,7 +201,7 @@ function setPairing() {
 function heartbeat(frequency) {
 
 	setInterval(function() {
-    log.info({home: homeId},  hostname+" - App.js: Heartbeat of " + homeId );
+    log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
 		fbGatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 
