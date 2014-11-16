@@ -5,6 +5,7 @@ var pjson = require('./package.json');
 var version = pjson.version;
 
 var Q = require('q');
+var os = require('os');
 var Firebase = require('firebase');
 var request = require('request');
 
@@ -17,9 +18,11 @@ var Thermostat = require('./lib/thermostat.js');
 var bunyan = require('bunyan')
 var bunyanLogentries = require('bunyan-logentries')
 
+var hostname = os.hostname();
+
 
 var log = bunyan.createLogger({
-  name: "gateway",
+  name: "gateway-",
   streams: [
     {
             stream: process.stdout,
@@ -43,19 +46,19 @@ var fbRef = new Firebase(config.firebase + '/gateways');
 
 // Always check for version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
-    log.info("App.js: Check for Update");
+    log.info(hostname+" - App.js: Check for Update");
     if (fbNewVersion) {
         var newVersion = fbNewVersion.val();
         if (newVersion) {
             if (newVersion !== version) {
-                log.info("App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
+                log.info(hostname+" - App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
                 var exec = require('child_process').exec;
                 var child = exec('git pull');
                 child.stdout.on('data', function(data) {
-                    log.info("App.js: Update procedure: " + data);
+                    log.info(hostname+" - App.js: Update procedure: " + data);
                 });
                 child.stderr.on('data', function(data) {
-                    log.warn("App.js: Update procedure error: " + data);
+                    log.warn(hostname+" - App.js: Update procedure error: " + data);
                 });
             }
         }
@@ -77,7 +80,7 @@ init.getGatewayId(fbRef)
         homeId = home;
         log.info({
             home: homeId
-        }, "App.js: I'm belonging to home " + homeId);
+        }, hostname+" - App.js: I'm belonging to home " + homeId);
         return getFbHomeRef(homeId);
     })
     .then(function(fbHomeRef) {
@@ -174,7 +177,7 @@ function setPairing() {
     var period = 180;
     log.info({
         home: homeId
-    }, 'App.js: Pairing activated for ' + period + 's');
+    }, hostname+' - App.js: Pairing activated for ' + period + 's');
     fhem.pairing(period);
     var retryTimer = setInterval(function() {
         request('http://' + HOST + ':' + HTTPPORT + '/fhem?cmd=jsonlist2%20hmusb&XHR=1', function(error, response, body) {
@@ -195,7 +198,7 @@ function setPairing() {
 function heartbeat(frequency) {
 
 	setInterval(function() {
-    log.info({home: homeId},  "App.js: Heartbeat of " + homeId );
+    log.info({home: homeId},  hostname+" - App.js: Heartbeat of " + homeId );
 		fbGatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 
