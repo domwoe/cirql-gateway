@@ -117,12 +117,12 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('windowOpnMode', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
-        thermostats[thermostatId].watch('pairedTo', 60 * 60 * 1000);
-        thermostats[thermostatId].watch('activity', 10 * 1000);
-        thermostats[thermostatId].watch('commandAccepted', 10 * 1000);
+        thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
+        //thermostats[thermostatId].watch('activity', 10 * 1000);
+        //thermostats[thermostatId].watch('commandAccepted', 10 * 1000);
         thermostats[thermostatId].watch('btnLock', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('state', 10 * 1000);
-        thermostats[thermostatId].watch('mode', 10 * 1000);
+        thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
     });
 
     if (fbThermostat.child('burstRX').child('Value').val() !== 'on') {
