@@ -112,7 +112,7 @@ function watchThermostats(fbHomeRef) {
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
         thermostats[thermostatId] = new Thermostat(thermostatId, fbThermostatRef);
         // watch method also activates burst mode if deactivated
-        thermostats[thermostatId].watch('burstRx',  15 * 1000);
+        thermostats[thermostatId].watch('burstRx',  15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
         thermostats[thermostatId].watch('windowOpnMode', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
@@ -175,8 +175,8 @@ function listenForPairing() {
 }
 
 function setPairing() {
-    // Activate pairing for 180s = 3min
-    var period = 180;
+    // Activate pairing for 300s = 5min
+    var period = 300;
     log.info({
         host: hostname,
         home: homeId
