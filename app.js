@@ -111,7 +111,7 @@ function watchThermostats(fbHomeRef) {
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
         thermostats[thermostatId] = new Thermostat(thermostatId, fbThermostatRef);
         // watch method also activates burst mode if deactivated
-        thermostats[thermostatId].watch('burstRx', 24 * 60 * 60 * 1000);
+        thermostats[thermostatId].watch('burstRx',  15 * 1000);
         // watch method also deactivates window open mode if activated
         thermostats[thermostatId].watch('windowOpnMode', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
