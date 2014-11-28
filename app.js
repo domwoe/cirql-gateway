@@ -98,8 +98,10 @@ function(reason) {
 
 
 function watchThermostats(fbHomeRef) {
-    /** Create and Delete Thermostats iff room has thermostats */
-    /** Listen if thermostat is added to room **/
+
+  /** Create and Delete Thermostats iff room has thermostats */
+  /** Listen if thermostat is added to room **/
+
     var thermostats = {};
     fbHomeRef.child('thermostats').on('child_added', function(fbThermostat) {
         var fbThermostatRef = fbThermostat.ref();
@@ -123,6 +125,7 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('btnLock', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
+
     });
 
     if (fbThermostat.child('burstRX').child('Value').val() !== 'on') {
