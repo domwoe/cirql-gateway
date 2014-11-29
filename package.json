@@ -1,6 +1,6 @@
 {
   "name": "cirql-gateway",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Gateway for cirql heating control and room climate monitoring system",
   "main": "app.js",
   "scripts": {
