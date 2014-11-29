@@ -204,7 +204,7 @@ function setPairing() {
 function heartbeat(frequency) {
 
 	setInterval(function() {
-    log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
+    //log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
 		fbGatewayRef.child('lastSeen').set(new Date().toString());
 	},frequency);
 
