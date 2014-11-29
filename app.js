@@ -128,7 +128,7 @@ function watchThermostats(fbHomeRef) {
 
     });
 
-    if (fbThermostat.child('burstRX').child('Value').val() !== 'on') {
+    if (fbThermostat.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
         thermostats[thermostatId].activateBurst();
     }
     if (fbThermostat.child('windowOpnMode').child('Value').val() !== 'off') {
