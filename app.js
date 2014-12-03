@@ -72,7 +72,7 @@ init.getGatewayId(fbRef)
         fbGatewayRef = fbRef.child(gatewayId);
         heartbeat(60000);
         // watchUpdates(fbGatewayRef);
-        fhem.initHMDevice(fbGatewayRef);
+        // fhem.initHMDevice(fbGatewayRef);
         listenForPairing();
         return init.getHomeId(fbRef, gatewayId);
     })
