@@ -90,16 +90,18 @@ init.getGatewayId(fbRef)
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
         // Regular saving of config
-        setInterval(function() {
-            log.info({host: hostname}, 'Saving fhem config');
-            fhem.write('save\n');
-        },5*60*1000);
+        setInterval(saveConfig,5*60*1000);
     }),
 function(reason) {
     log.info({
         home: homeId
     }, reason);
 };
+
+function saveConfig() {
+    log.info({host: hostname}, 'Saving fhem config');
+    fhem.write('save\n');
+}
 
 
 function watchThermostats(fbHomeRef) {
@@ -121,7 +123,7 @@ function watchThermostats(fbHomeRef) {
         // watch method also activates burst mode if deactivated
         thermostats[thermostatId].watch('burstRx',  15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
-        thermostats[thermostatId].watch('windowOpnMode', 24 * 60 * 60 * 1000);
+        thermostats[thermostatId].watch('windowOpnMode', 5 * 60 * 1000);
         thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
@@ -136,7 +138,7 @@ function watchThermostats(fbHomeRef) {
     if (fbThermostat.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
         thermostats[thermostatId].activateBurst();
     }
-    if (fbThermostat.child('windowOpnMode').child('Value').val() !== 'off') {
+    if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ' ) {
         thermostats[thermostatId].deactivateWindowOpnMode();
     }
 
