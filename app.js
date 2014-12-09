@@ -145,10 +145,10 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
-        if (fbThermostatRef.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
+        if (fbThermostat.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
             thermostats[thermostatId].activateBurst();
         }
-        if (fbThermostatRef.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
+        if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
 
