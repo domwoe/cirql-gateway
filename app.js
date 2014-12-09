@@ -93,7 +93,7 @@ init.getGatewayId(fbRef)
         setInterval(function() {
             log.info({home: homeId}, 'Saving fhem config');
             fhem.write('save\n');
-        },60*60*1000);
+        },5*60*1000);
     }),
 function(reason) {
     log.info({
