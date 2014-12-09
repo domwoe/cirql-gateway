@@ -91,7 +91,7 @@ init.getGatewayId(fbRef)
         watchThermostats(fbHomeRef);
         // Regular saving of config
         setInterval(function() {
-            log.info({home: homeId}, 'Saving fhem config');
+            log.info({host: hostname, 'Saving fhem config');
             fhem.write('save\n');
         },5*60*1000);
     }),
