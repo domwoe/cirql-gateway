@@ -22,16 +22,16 @@ var hostname = os.hostname();
 
 
 var log = bunyan.createLogger({
-  name: "gateway",
-  streams: [
-    {
-            stream: process.stdout,
-            level: "info"
-        },
-    {
-      level: 'info',
-      stream: bunyanLogentries.createStream({token: '2f63e221-e11a-44e3-b5f3-3bd09a39bdc2'}),
-      type: 'raw'
+    name: "gateway",
+    streams: [{
+        stream: process.stdout,
+        level: "info"
+    }, {
+        level: 'info',
+        stream: bunyanLogentries.createStream({
+            token: '2f63e221-e11a-44e3-b5f3-3bd09a39bdc2'
+        }),
+        type: 'raw'
     }]
 })
 
@@ -46,19 +46,27 @@ var fbRef = new Firebase(config.firebase + '/gateways');
 
 // Always check for version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
-    log.info({host: hostname},"App.js: Check for Update");
+    log.info({
+        host: hostname
+    }, "App.js: Check for Update");
     if (fbNewVersion) {
         var newVersion = fbNewVersion.val();
         if (newVersion) {
             if (newVersion !== version) {
-                log.info({host: hostname},"App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
+                log.info({
+                    host: hostname
+                }, "App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
                 var exec = require('child_process').exec;
                 var child = exec('git pull');
                 child.stdout.on('data', function(data) {
-                    log.info({host: hostname},"App.js: Update procedure: " + data);
+                    log.info({
+                        host: hostname
+                    }, "App.js: Update procedure: " + data);
                 });
                 child.stderr.on('data', function(data) {
-                    log.warn({host: hostname},"App.js: Update procedure error: " + data);
+                    log.warn({
+                        host: hostname
+                    }, "App.js: Update procedure error: " + data);
                 });
             }
         }
@@ -89,8 +97,7 @@ init.getGatewayId(fbRef)
         // Listen for new thermostat data via telnet 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
-        // Regular saving of config
-        setInterval(saveConfig,5*60*1000);
+
     }),
 function(reason) {
     log.info({
@@ -99,15 +106,20 @@ function(reason) {
 };
 
 function saveConfig() {
-    log.info({host: hostname}, 'Saving fhem config');
+    log.info({
+        host: hostname
+    }, 'Saving fhem config');
     fhem.write('save\n');
 }
+
+// Regular saving of config
+setInterval(saveConfig, 5 * 60 * 1000);
 
 
 function watchThermostats(fbHomeRef) {
 
-  /** Create and Delete Thermostats iff room has thermostats */
-  /** Listen if thermostat is added to room **/
+    /** Create and Delete Thermostats iff room has thermostats */
+    /** Listen if thermostat is added to room **/
 
     var thermostats = {};
     fbHomeRef.child('thermostats').on('child_added', function(fbThermostat) {
@@ -121,7 +133,7 @@ function watchThermostats(fbHomeRef) {
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
         thermostats[thermostatId] = new Thermostat(thermostatId, fbThermostatRef);
         // watch method also activates burst mode if deactivated
-        thermostats[thermostatId].watch('burstRx',  15 * 60 * 1000);
+        thermostats[thermostatId].watch('burstRx', 15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
         thermostats[thermostatId].watch('windowOpnMode', 5 * 60 * 1000);
         thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
@@ -133,14 +145,16 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
+        if (fbThermostatRef.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
+            thermostats[thermostatId].activateBurst();
+        }
+        if (fbThermostatRef.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
+            thermostats[thermostatId].deactivateWindowOpnMode();
+        }
+
     });
 
-    if (fbThermostat.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
-        thermostats[thermostatId].activateBurst();
-    }
-    if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ' ) {
-        thermostats[thermostatId].deactivateWindowOpnMode();
-    }
+
 
     /** Listen if thermostat is removed from room */
     fbHomeRef.child('thermostats').on('child_removed', function(fbThermostat) {
@@ -210,10 +224,9 @@ function setPairing() {
 
 function heartbeat(frequency) {
 
-	setInterval(function() {
-    //log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
-		fbGatewayRef.child('lastSeen').set(new Date().toString());
-	},frequency);
+    setInterval(function() {
+        //log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
+        fbGatewayRef.child('lastSeen').set(new Date().toString());
+    }, frequency);
 
 }
-
