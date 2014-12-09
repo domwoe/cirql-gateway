@@ -89,6 +89,10 @@ init.getGatewayId(fbRef)
         // Listen for new thermostat data via telnet 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
+        // Regular saving of config
+        setInterval(function() {
+            fhem.write('save\n');
+        },60*60*1000);
     }),
 function(reason) {
     log.info({
