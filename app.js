@@ -138,7 +138,7 @@ function saveConfig() {
 }
 
 // Regular saving of config
-setInterval(saveConfig, 5 * 60 * 1000);
+setInterval(saveConfig, 3 * 60 * 1000);
 
 
 function watchThermostats(fbHomeRef) {
@@ -171,13 +171,11 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
         if (fbThermostat.child('burstRX').child('Value').val() === 'off' || 
-            fbThermostat.child('burstRX').child('Value').val() === 'off ' || 
-            !fbThermostat.child('burstRX').child('Value').val()) {
+            fbThermostat.child('burstRX').child('Value').val() === 'off ') {
             thermostats[thermostatId].activateBurst();
         }
         if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || 
-            fbThermostat.child('windowOpnMode').child('Value').val() === 'on ' ||
-            !fbThermostat.child('burstRX').child('Value').val()) {
+            fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
     });
