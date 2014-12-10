@@ -15,8 +15,8 @@ var fhem = require('./lib/fhem');
 
 var Thermostat = require('./lib/thermostat.js');
 
-var bunyan = require('bunyan')
-var bunyanLogentries = require('bunyan-logentries')
+var bunyan = require('bunyan');
+var bunyanLogentries = require('bunyan-logentries');
 
 var hostname = os.hostname();
 
@@ -33,7 +33,7 @@ var log = bunyan.createLogger({
         }),
         type: 'raw'
     }]
-})
+});
 
 var homeId = null;
 var fbHomeRef = null;
@@ -73,37 +73,62 @@ fbRef.child('version').on('value', function(fbNewVersion) {
     }
 });
 
-// Start initializing
-init.getGatewayId(fbRef)
-    .then(function(gatewayId) {
-        // Send a heartbeat to firebase every 60s
-        fbGatewayRef = fbRef.child(gatewayId);
-        heartbeat(60000);
-        // watchUpdates(fbGatewayRef);
-        // fhem.initHMDevice(fbGatewayRef);
-        listenForPairing();
-        return init.getHomeId(fbRef, gatewayId);
-    })
-    .then(function(home) {
-        homeId = home;
-        log.info({
-            host: hostname,
-            home: homeId
-        }, "App.js: I'm belonging to home " + homeId);
-        return getFbHomeRef(homeId);
-    })
-    .then(function(fbHomeRef) {
-        fbHomeRef = fbHomeRef;
-        // Listen for new thermostat data via telnet 
-        fhem.listen(fbHomeRef);
-        watchThermostats(fbHomeRef);
+// function setFbRefOff() {
+//     fbRef.off();
+// }
 
-    }),
-function(reason) {
+function getFbHomeRef(homeId) {
+    var deferred = Q.defer();
+    fbHomeRef = new Firebase(config.firebase + '/homes/' + homeId);
+    deferred.resolve(fbHomeRef);
+    return deferred.promise;
+}
+
+function setPairing() {
+    // Activate pairing for 300s = 5min
+    var period = 300;
     log.info({
+        host: hostname,
         home: homeId
-    }, reason);
-};
+    }, 'App.js: Pairing activated for ' + period + 's');
+    fhem.pairing(period);
+    var retryTimer = setInterval(function() {
+        request('http://' + HOST + ':' + HTTPPORT + '/fhem?cmd=jsonlist2%20hmusb&XHR=1', function(error, response, body) {
+            if (!error && response.statusCode === 200) {
+                var jsonObj = JSON.parse(body);
+                //console.log((jsonObj.Results[0].Internals).hasOwnProperty('hmPair'));
+                if ((jsonObj.Results[0].Internals).hasOwnProperty('hmPair')) {
+                    fbGatewayRef.child('isPairing').set(true);
+                } else {
+                    fbGatewayRef.child('isPairing').set(false);
+                    clearInterval(retryTimer);
+                }
+            }
+        });
+    }, 10 * 1000);
+}
+
+
+function listenForPairing() {
+    fbGatewayRef.child('activatePairing')
+        .on('value', function(snap) {
+            var activatePairing = snap.val();
+            if (activatePairing) {
+                setPairing();
+                fbGatewayRef
+                    .child('activatePairing')
+                    .set(false);
+            }
+        });
+}
+
+function heartbeat(frequency) {
+
+    setInterval(function() {
+        //log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
+        fbGatewayRef.child('lastSeen').set(new Date().toString());
+    }, frequency);
+}
 
 function saveConfig() {
     log.info({
@@ -145,13 +170,16 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
-        if (fbThermostat.child('burstRX').child('Value').val() === 'off' || fbThermostat.child('burstRX').child('Value').val() === 'off ' || !fbThermostat.child('burstRX').child('Value').val()) {
+        if (fbThermostat.child('burstRX').child('Value').val() === 'off' || 
+            fbThermostat.child('burstRX').child('Value').val() === 'off ' || 
+            !fbThermostat.child('burstRX').child('Value').val()) {
             thermostats[thermostatId].activateBurst();
         }
-        if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
+        if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || 
+            fbThermostat.child('windowOpnMode').child('Value').val() === 'on ' ||
+            !fbThermostat.child('burstRX').child('Value').val()) {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
-
     });
 
 
@@ -174,59 +202,35 @@ function watchThermostats(fbHomeRef) {
     });
 }
 
-function setFbRefOff() {
-    fbRef.off();
-}
 
-function getFbHomeRef(homeId) {
-    var deferred = Q.defer();
-    fbHomeRef = new Firebase(config.firebase + '/homes/' + homeId);
-    deferred.resolve(fbHomeRef);
-    return deferred.promise;
-}
+// Start initializing
+init.getGatewayId(fbRef)
+    .then(function(gatewayId) {
+        // Send a heartbeat to firebase every 60s
+        fbGatewayRef = fbRef.child(gatewayId);
+        heartbeat(60000);
+        // watchUpdates(fbGatewayRef);
+        // fhem.initHMDevice(fbGatewayRef);
+        listenForPairing();
+        return init.getHomeId(fbRef, gatewayId);
+    })
+    .then(function(home) {
+        homeId = home;
+        log.info({
+            host: hostname,
+            home: homeId
+        }, "App.js: I'm belonging to home " + homeId);
+        return getFbHomeRef(homeId);
+    })
+    .then(function(fbHomeRef) {
+        fbHomeRef = fbHomeRef;
+        // Listen for new thermostat data via telnet 
+        fhem.listen(fbHomeRef);
+        watchThermostats(fbHomeRef);
 
-function listenForPairing() {
-    fbGatewayRef.child('activatePairing')
-        .on('value', function(snap) {
-            var activatePairing = snap.val();
-            if (activatePairing) {
-                setPairing();
-                fbGatewayRef
-                    .child('activatePairing')
-                    .set(false);
-            }
-        });
-}
-
-function setPairing() {
-    // Activate pairing for 300s = 5min
-    var period = 300;
-    log.info({
-        host: hostname,
-        home: homeId
-    }, 'App.js: Pairing activated for ' + period + 's');
-    fhem.pairing(period);
-    var retryTimer = setInterval(function() {
-        request('http://' + HOST + ':' + HTTPPORT + '/fhem?cmd=jsonlist2%20hmusb&XHR=1', function(error, response, body) {
-            if (!error && response.statusCode === 200) {
-                var jsonObj = JSON.parse(body);
-                //console.log((jsonObj.Results[0].Internals).hasOwnProperty('hmPair'));
-                if ((jsonObj.Results[0].Internals).hasOwnProperty('hmPair')) {
-                    fbGatewayRef.child('isPairing').set(true);
-                } else {
-                    fbGatewayRef.child('isPairing').set(false);
-                    clearInterval(retryTimer);
-                }
-            }
-        });
-    }, 10 * 1000);
-}
-
-function heartbeat(frequency) {
-
-    setInterval(function() {
-        //log.info({ host: hostname, home: homeId},  "App.js: Heartbeat of " + homeId );
-        fbGatewayRef.child('lastSeen').set(new Date().toString());
-    }, frequency);
-
-}
+    }),
+    function(reason) {
+        log.info({
+            home: homeId
+        }, reason);
+    };
