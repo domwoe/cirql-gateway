@@ -227,10 +227,9 @@ init.getGatewayId(fbRef)
         // Listen for new thermostat data via telnet 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
-
-    }),
+    },
     function(reason) {
         log.info({
             home: homeId
         }, reason);
-    };
+    });
