@@ -156,7 +156,7 @@ function watchThermostats(fbHomeRef) {
         }
 
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
-        thermostats[thermostatId] = new Thermostat(thermostatId, fbThermostatRef);
+        thermostats[thermostatId] = new Thermostat(homeId, thermostatId);
 
         thermostats[thermostatId].getConfig();
         // watch method also activates burst mode if deactivated
@@ -193,7 +193,7 @@ function watchThermostats(fbHomeRef) {
         var id = fbThermostat.name();
         var thermostatObj = thermostats[id];
 
-        if (thermostatObj) {
+        if (thermostatObj.val()) {
             //log.info({home: this.homeId, room: this.id}, ' Room: delete Thermostat with id: '+id);
             thermostatObj.unwatchAll();
             thermostatObj.setFbRefOff();
