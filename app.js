@@ -226,8 +226,9 @@ init.getGatewayId(fbRef)
         fbHomeRef = fbHomeRef;
         // Get hmusb hmId
         fhem.getHmId(function(err,hmId) {
-            console.log(hmId);
-            if (hmId === 'FAC112') {
+            console.log('HMID: '+hmId);
+            if (hmId == 'FAC112') {
+                console.log("It's TRUE");
                 fhem.setHmId();
                 log.info({
                     host: hostname,
