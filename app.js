@@ -224,6 +224,17 @@ init.getGatewayId(fbRef)
     })
     .then(function(fbHomeRef) {
         fbHomeRef = fbHomeRef;
+        // Get hmusb hmId
+        fhem.getHmId(function(err,hmId) {
+            console.log(hmId);
+            if (hmId === 'FAC112') {
+                fhem.setHmId();
+                log.info({
+                    host: hostname,
+                    home: homeId
+                },'Changed hmId');
+            }
+        })
         // Listen for new thermostat data via telnet 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
