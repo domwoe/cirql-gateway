@@ -158,11 +158,11 @@ function watchThermostats(fbHomeRef) {
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
         thermostats[thermostatId] = new Thermostat(homeId, thermostatId);
 
-        thermostats[thermostatId].getConfig();
+        //thermostats[thermostatId].getConfig();
         // watch method also activates burst mode if deactivated
         thermostats[thermostatId].watch('burstRx', 15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
-        thermostats[thermostatId].watch('windowOpnMode', 30 * 60 * 1000);
+        thermostats[thermostatId].watch('windowOpnMode', (50 + 15 * Math.random()) * 60 * 1000);
         //thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
