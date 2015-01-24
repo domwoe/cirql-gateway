@@ -131,9 +131,9 @@ function heartbeat(frequency) {
 }
 
 function saveConfig() {
-    log.info({
-        host: hostname
-    }, 'Saving fhem config');
+    // log.info({
+    //     host: hostname
+    // }, 'Saving fhem config');
     fhem.write('save\n');
 }
 
@@ -162,13 +162,13 @@ function watchThermostats(fbHomeRef) {
         // watch method also activates burst mode if deactivated
         thermostats[thermostatId].watch('burstRx', 15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
-        thermostats[thermostatId].watch('windowOpnMode', 5 * 60 * 1000);
-        thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
-        thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
-        thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
+        thermostats[thermostatId].watch('windowOpnMode', 30 * 60 * 1000);
+        //thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
+        //thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
+        //thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('activity', 10 * 1000);
         //thermostats[thermostatId].watch('commandAccepted', 10 * 1000);
-        thermostats[thermostatId].watch('btnLock', 24 * 60 * 60 * 1000);
+        //thermostats[thermostatId].watch('btnLock', 24 * 60 * 60 * 1000);
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
