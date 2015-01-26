@@ -39,6 +39,8 @@ var homeId = null;
 var fbHomeRef = null;
 var fbGatewayRef = null;
 
+var saveTimeout = null;
+
 var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
 
@@ -138,7 +140,7 @@ function saveConfig() {
 }
 
 // Regular saving of config
-setInterval(saveConfig, 3 * 60 * 1000);
+//setInterval(saveConfig, 3 * 60 * 1000);
 
 
 function watchThermostats(fbHomeRef) {
@@ -180,6 +182,11 @@ function watchThermostats(fbHomeRef) {
             fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
+
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+        }
+        saveTimeout = setTimeout(saveConfig,60 * 1000);
     });
 
 
@@ -233,7 +240,7 @@ init.getGatewayId(fbRef)
                     home: homeId
                 },'Changed hmId');
             }
-        })
+        });
         // Listen for new thermostat data via telnet 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
