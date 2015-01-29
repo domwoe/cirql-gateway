@@ -165,8 +165,8 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('burstRx', 15 * 60 * 1000);
         // watch method also deactivates window open mode if activated
         thermostats[thermostatId].watch('windowOpnMode', (50 + 15 * Math.random()) * 60 * 1000);
-        thermostats[thermostatId].watch('windowOpnTemp', (10 * 60 * 1000);
-        thermostats[thermostatId].watch('windowOpnPeriod', (10 * 60 * 1000);
+        thermostats[thermostatId].watch('windowOpnTemp', 5 * 60 * 1000);
+        thermostats[thermostatId].watch('windowOpnPeriod', 5 * 60 * 1000);
         //thermostats[thermostatId].watch('tempOffset', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
