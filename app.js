@@ -43,14 +43,30 @@ var saveTimeout = null;
 
 var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
+var FIREBASE_SECRET = config.FIREBASE_SECRET;
 
 var fbRef = new Firebase(config.firebase + '/gateways');
+fbRef.auth(FIREBASE_SECRET, function(error, result) {
+    if (error) {
+        log.warn({
+            host: hostname
+        }, 'Firebase authentication failed' + error);
+    } else {
+
+        log.info({
+            host: hostname
+        }, 'Firebase: Authenticated successfully with payload: ' + result.auth);
+        log.info({
+            host: hostname
+        }, 'Firebase: Auth expires at: ' + new Date(result.expires * 1000));
+    }
+});
 
 // Always check for version updates
 fbRef.child('version').on('value', function(fbNewVersion) {
     log.info({
         host: hostname
-    }, "App.js: Check for Update");
+    }, 'App.js: Check for Update');
     if (fbNewVersion) {
         var newVersion = fbNewVersion.val();
         if (newVersion) {
@@ -176,11 +192,11 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('state', 10 * 1000);
         thermostats[thermostatId].watch('mode', 10 * 60 * 1000);
 
-        if (fbThermostat.child('burstRX').child('Value').val() === 'off' || 
+        if (fbThermostat.child('burstRX').child('Value').val() === 'off' ||
             fbThermostat.child('burstRX').child('Value').val() === 'off ') {
             thermostats[thermostatId].activateBurst();
         }
-        if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' || 
+        if (fbThermostat.child('windowOpnMode').child('Value').val() === 'on' ||
             fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
@@ -188,7 +204,7 @@ function watchThermostats(fbHomeRef) {
         if (saveTimeout) {
             clearTimeout(saveTimeout);
         }
-        saveTimeout = setTimeout(saveConfig,60 * 1000);
+        saveTimeout = setTimeout(saveConfig, 60 * 1000);
     });
 
 
@@ -232,23 +248,23 @@ init.getGatewayId(fbRef)
         return getFbHomeRef(homeId);
     })
     .then(function(fbHomeRef) {
-        fbHomeRef = fbHomeRef;
-        // Get hmusb hmId
-        fhem.getHmId(function(err,hmId) {
-            if (hmId == 'FAC112') {
-                fhem.setHmId();
-                log.info({
-                    host: hostname,
-                    home: homeId
-                },'Changed hmId');
-            }
+            fbHomeRef = fbHomeRef;
+            // Get hmusb hmId
+            fhem.getHmId(function(err, hmId) {
+                if (hmId == 'FAC112') {
+                    fhem.setHmId();
+                    log.info({
+                        host: hostname,
+                        home: homeId
+                    }, 'Changed hmId');
+                }
+            });
+            // Listen for new thermostat data via telnet. 
+            fhem.listen(fbHomeRef);
+            watchThermostats(fbHomeRef);
+        },
+        function(reason) {
+            log.info({
+                home: homeId
+            }, reason);
         });
-        // Listen for new thermostat data via telnet. 
-        fhem.listen(fbHomeRef);
-        watchThermostats(fbHomeRef);
-    },
-    function(reason) {
-        log.info({
-            home: homeId
-        }, reason);
-    });

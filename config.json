@@ -2,5 +2,6 @@
 "firebase": "https://cirql.firebaseio.com/",
 "HOST": "localhost",
 "NETPORT": "7072",
-"HTTPPORT": "8083" 
+"HTTPPORT": "8083",
+"FIREBASE_SECRET": "b1CGRaicJ8bItqzasSevA3KMlXw7nwMW06v4dz1e"
 }
