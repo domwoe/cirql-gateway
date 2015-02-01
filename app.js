@@ -59,7 +59,7 @@ fbRef.child('version').on('value', function(fbNewVersion) {
                     host: hostname
                 }, "App.js: New version " + newVersion + " available (currently: " + version + "). Starting update... ");
                 var exec = require('child_process').exec;
-                var child = exec('git pull');
+                var child = exec('git pull https://domwoe:snags98live@github.com/domwoe/cirql-gateway.git');
                 child.stdout.on('data', function(data) {
                     log.info({
                         host: hostname
