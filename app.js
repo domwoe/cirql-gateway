@@ -243,7 +243,7 @@ init.getGatewayId(fbRef)
                 },'Changed hmId');
             }
         });
-        // Listen for new thermostat data via telnet 
+        // Listen for new thermostat data via telnet. 
         fhem.listen(fbHomeRef);
         watchThermostats(fbHomeRef);
     },
