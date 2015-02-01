@@ -56,9 +56,6 @@ fbRef.auth(FIREBASE_SECRET, function(error, result) {
         log.info({
             host: hostname
         }, 'Firebase: Authenticated successfully with payload: ' + result.auth);
-        log.info({
-            host: hostname
-        }, 'Firebase: Auth expires at: ' + new Date(result.expires * 1000));
     }
 });
 
