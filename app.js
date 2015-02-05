@@ -145,10 +145,14 @@ function heartbeat(frequency) {
     }, frequency);
 }
 
+function hasLowerCase(str) {
+    return str.toUpperCase() != str;
+}
+
 function saveConfig() {
-    // log.info({
-    //     host: hostname
-    // }, 'Saving fhem config');
+    log.info({
+        host: hostname
+    }, 'Saving fhem config');
     fhem.write('save\n');
 }
 
@@ -168,6 +172,12 @@ function watchThermostats(fbHomeRef) {
 
         if (!fbThermostat.hasChild('room')) {
             fbThermostatRef.child('room').set('null');
+
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+
+            saveTimeout = setTimeout(saveConfig,5000);
         }
 
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
@@ -198,10 +208,10 @@ function watchThermostats(fbHomeRef) {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
 
-        if (saveTimeout) {
-            clearTimeout(saveTimeout);
-        }
-        saveTimeout = setTimeout(saveConfig, 60 * 1000);
+        // if (saveTimeout) {
+        //     clearTimeout(saveTimeout);
+        // }
+        // saveTimeout = setTimeout(saveConfig, 60 * 1000);
     });
 
 
@@ -248,7 +258,7 @@ init.getGatewayId(fbRef)
             fbHomeRef = fbHomeRef;
             // Get hmusb hmId
             fhem.getHmId(function(err, hmId) {
-                if (hmId == 'FAC112') {
+                if (hmId === 'FAC112' || hasLowerCase(hmId)) {
                     fhem.setHmId();
                     log.info({
                         host: hostname,
