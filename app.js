@@ -41,8 +41,6 @@ var fbGatewayRef = null;
 
 var saveTimeout = null;
 
-var wait = 0;
-
 var HOST = config.HOST;
 var HTTPPORT = config.HTTPPORT;
 var FIREBASE_SECRET = config.FIREBASE_SECRET;
@@ -169,7 +167,6 @@ function watchThermostats(fbHomeRef) {
 
     var thermostats = {};
     fbHomeRef.child('thermostats').on('child_added', function(fbThermostat) {
-        wait++;
         var fbThermostatRef = fbThermostat.ref();
         var thermostatId = fbThermostat.name();
 
@@ -182,10 +179,6 @@ function watchThermostats(fbHomeRef) {
 
             saveTimeout = setTimeout(saveConfig,30000);
         }
-
-        setTimeout( function() {
-
-        wait--;
 
         //log.info({home: this.homeId, room: this.id}, ' Room: new Thermostat ' + thermostatId);
         thermostats[thermostatId] = new Thermostat(homeId, thermostatId);
@@ -214,8 +207,6 @@ function watchThermostats(fbHomeRef) {
             fbThermostat.child('windowOpnMode').child('Value').val() === 'on ') {
             thermostats[thermostatId].deactivateWindowOpnMode();
         }
-
-    },wait*20000);
 
         // if (saveTimeout) {
         //     clearTimeout(saveTimeout);
