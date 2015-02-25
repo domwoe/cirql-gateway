@@ -190,7 +190,7 @@ function watchThermostats(fbHomeRef) {
         thermostats[thermostatId].watch('windowOpnMode', (50 + 15 * Math.random()) * 60 * 1000);
         thermostats[thermostatId].watch('windowOpnTemp', 5 * 60 * 1000);
         thermostats[thermostatId].watch('windowOpnPeriod', 5 * 60 * 1000);
-        thermostats[thermostatId].watch('tempOffset', 5 * 60 * 1000);
+        thermostats[thermostatId].watch('tempOffset', 2 * 60 * 1000);
         //thermostats[thermostatId].watch('regAdaptive', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('pairedTo', 24 * 60 * 60 * 1000);
         //thermostats[thermostatId].watch('activity', 10 * 1000);
