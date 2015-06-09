@@ -146,7 +146,11 @@ function heartbeat(frequency) {
 }
 
 function hasLowerCase(str) {
-    return str.toUpperCase() != str;
+    if (str !== null && typeof str === 'string') {
+
+        return str.toUpperCase() != str;
+
+    }
 }
 
 function saveConfig() {
